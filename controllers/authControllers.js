@@ -310,6 +310,82 @@ module.exports.increaseQty = async (req, res) => {
     })
 }
 
+module.exports.decreaseQty = async (req, res) => {
+    const {
+        user_id,
+        product_id,
+        quantity,
+        stock
+    } = req.body
+
+    console.log(quantity);
+
+    const findUser = await Session.findOne({
+        where: {
+            user_id: user_id
+        }
+    })
+
+    if (findUser) {
+
+        //update cart
+        let updateCart = await Cart.decrement({
+                quantity: 1 //decrement quantity column
+            }, {
+                where: {
+                    user_id: user_id,
+                    product_id: product_id
+
+                },
+                returning: true
+            } //returning: true to get the updated records
+
+        )
+
+
+        const updateStock = await Inventory.update({
+            stock: stock
+        }, {
+            where: {
+                product_id: product_id
+            }
+        })
+
+
+        //look for the updated record
+        const checkQty = await Cart.findOne({
+            where: {
+                user_id: user_id,
+                product_id: product_id,
+            }
+        })
+
+        //if qty is 0 remove record from db
+        if (checkQty.dataValues.quantity === 0) {
+            const removeRow = await Cart.destroy({
+                where: {
+                    user_id: user_id,
+                    product_id: product_id,
+                }
+            })
+
+            const getCart = await Cart.findAll()
+
+            updateCart = getCart
+            return res.json({
+                'cart': updateCart
+            })
+        } else {
+            const getCart = await Cart.findAll()
+            updateCart = getCart
+            return res.json({
+                'cart': updateCart
+            })
+        }
+    }
+}
+
+
 module.exports.userLogin = async (req, res) => {
     try {
         const {
