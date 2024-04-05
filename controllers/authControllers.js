@@ -279,11 +279,35 @@ module.exports.increaseQty = async (req, res) => {
 
     const findUser = await Session.findOne({
         where: {
-            user_id: 111
+            user_id: user_id
         }
     })
 
-    console.log(findUser);
+    if (findUser) {
+        const findProduct = await Cart.findOne({
+            where: {
+                user_id: user_id,
+                product_id: product_id
+            }
+        })
+
+        await findProduct.increment('quantity', {
+            by: 1
+        })
+
+        const updateStock = await Inventory.update({
+            stock: stock
+        }, {
+            where: {
+                product_id: product_id
+            }
+        })
+    }
+
+    const sendUpdatedCart = await Cart.findAll()
+    return res.json({
+        'cart': sendUpdatedCart
+    })
 }
 
 module.exports.userLogin = async (req, res) => {
