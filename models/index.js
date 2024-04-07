@@ -37,11 +37,26 @@ Object.keys(db).forEach(modelName => {
 });
 
 const User = require('./User.js')(sequelize);
+const Wishlist = require('./Wishlist.js')(sequelize);
 const Session = require('./Session.js')(sequelize);
 const Cart = require('./Cart.js')(sequelize);
 const Products = require('./Products.js')(sequelize);
 const Inventory = require('./Inventory.js')(sequelize);
 const Images = require('./Images.js')(sequelize);
+
+User.hasOne(Wishlist, {
+  foreignKey: 'user_id'
+})
+Wishlist.belongsTo(User, {
+  foreignKey: 'user_id'
+})
+
+Products.hasMany(Wishlist, {
+  foreignKey: 'product_id'
+})
+Wishlist.hasMany(Products, {
+  foreignKey: 'product_id'
+})
 
 User.hasOne(Cart, {
   foreignKey: 'user_id'

@@ -1,10 +1,9 @@
 const {
-    Sequelize,
     DataTypes
 } = require('sequelize');
 
 module.exports = (sequelize) => {
-    const Admin = sequelize.define("Admins", {
+    const Wishlist = sequelize.define("Wishlist", {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -13,35 +12,22 @@ module.exports = (sequelize) => {
                 notEmpty: true
             },
         },
-        name: {
-            type: DataTypes.STRING,
+        user_id: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-            unique: false,
             validate: {
                 notEmpty: true
             },
         },
-        email: {
-            type: DataTypes.STRING,
+        product_id: {
+            type: DataTypes.INTEGER,
             allowNull: false,
             unique: true,
             validate: {
-                notEmpty: true,
-                isEmail: true
-            },
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
                 notEmpty: true
             },
-        },
-        isAdmin: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false
         }
     });
 
-    return Admin;
+    return Wishlist;
 }

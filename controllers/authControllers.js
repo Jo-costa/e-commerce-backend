@@ -7,6 +7,7 @@ dotenv.config();
 const {
     Admin,
     Products,
+    Wishlist,
     User,
     Session,
     Cart,
@@ -318,7 +319,8 @@ module.exports.decreaseQty = async (req, res) => {
         stock
     } = req.body
 
-    console.log(quantity);
+    console.log("prod:", product_id);
+    console.log("qty:", quantity);
 
     const findUser = await Session.findOne({
         where: {
@@ -384,6 +386,92 @@ module.exports.decreaseQty = async (req, res) => {
         }
     }
 }
+
+
+module.exports.addToWishlist = async (req, res) => {
+    const {
+        product_id,
+        user_id
+    } = req.body;
+    const user = await Session.findOne({
+        where: {
+            user_id: user_id
+        }
+    })
+
+
+
+    if (user) {
+
+        const findProduct = await Wishlist.findOne({
+            where: {
+                product_id: product_id
+            }
+        })
+
+        if (!findProduct) {
+            const addToWishlist = await Wishlist.create({
+                user_id: user_id,
+                product_id: product_id
+            })
+
+            const retrieveWishlist = await Wishlist.findAll()
+
+            console.log(retrieveWishlist);
+            return res.json(retrieveWishlist)
+        }
+
+        const retrieveWishlist = await Wishlist.findAll()
+
+        return res.json(retrieveWishlist)
+
+
+    }
+
+
+}
+module.exports.removeFromWishlist = async (req, res) => {
+    const {
+        product_id,
+        user_id
+    } = req.body;
+    const user = await Session.findOne({
+        where: {
+            user_id: user_id
+        }
+    })
+
+    if (user) {
+
+        const findProduct = await Wishlist.destroy({
+            where: {
+                product_id: product_id
+            }
+        })
+
+        if (!findProduct) {
+            const addToWishlist = await Wishlist.create({
+                user_id: user_id,
+                product_id: product_id
+            })
+
+            const retrieveWishlist = await Wishlist.findAll()
+
+            console.log(retrieveWishlist);
+            return res.json(retrieveWishlist)
+        }
+
+        const retrieveWishlist = await Wishlist.findAll()
+
+        return res.json(retrieveWishlist)
+
+
+    }
+
+
+
+}
+
 
 
 module.exports.userLogin = async (req, res) => {
@@ -456,6 +544,15 @@ module.exports.userLogin = async (req, res) => {
             }
         })
 
+        const wishlist = await Wishlist.findAll({
+            where: {
+                user_id: user.id
+            },
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            }
+        })
+
         // res.status(201).json({
         //     admin: admin.email
         // })
@@ -472,11 +569,11 @@ module.exports.userLogin = async (req, res) => {
             secure: false
         })
 
-        console.log("cart: ", Array.isArray(cart));
         return res.json({
             'user': user,
             'cart': cart,
-            'token': token
+            'token': token,
+            'wishlist': wishlist
         })
 
     } catch (error) {
@@ -626,7 +723,8 @@ module.exports.userLogout = async (req, res) => {
 
     res.status(200).json({
         'message': 'You have been logged out!',
-        'cart': []
+        'cart': [],
+        'wishlist': []
     })
 }
 module.exports.adminlogin = async (req, res) => {
