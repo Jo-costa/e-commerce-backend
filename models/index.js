@@ -54,7 +54,7 @@ Wishlist.belongsTo(User, {
 Products.hasMany(Wishlist, {
   foreignKey: 'product_id'
 })
-Wishlist.hasMany(Products, {
+Wishlist.belongsTo(Products, {
   foreignKey: 'product_id'
 })
 
