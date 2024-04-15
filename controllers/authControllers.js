@@ -472,7 +472,142 @@ module.exports.removeFromWishlist = async (req, res) => {
 
 }
 
+module.exports.updateUserName = async (req, res) => {
 
+    const {
+        user_id,
+        newUsername
+    } = req.body;
+
+    console.log(user_id, newUsername);
+
+    const findUser = await User.findOne({
+        where: {
+            id: user_id
+        },
+        attributes: {
+            exclude: ['password', 'updatedAt', 'createdAt']
+        }
+    })
+
+    if (findUser) {
+        const updateUserName = await User.update({
+            username: newUsername
+        }, {
+            where: {
+                id: user_id
+            }
+        })
+        return res.json({
+            'message': 'Name updated Successfully',
+            'username': newUsername
+        })
+    } else {
+        return res.json({
+            'message': 'Error while updating'
+        })
+    }
+
+
+}
+module.exports.updatePass = async (req, res) => {
+
+    const {
+        user_id,
+        currentPass,
+        newPass
+    } = req.body;
+
+    console.log(user_id, currentPass, newPass);
+
+
+    const findUser = await User.findOne({
+        where: {
+            id: user_id
+        },
+        attributes: {
+            exclude: ['password', 'updatedAt', 'createdAt']
+        }
+    })
+
+    if (findUser) {
+        const userpass = await User.findOne({
+            where: {
+                id: user_id
+            }
+        })
+
+        //verify password by comparing the password the user entered
+        //against the hashed password inserted in the database (Models > User.js)
+        const checkPassword = await bcrypt.compare(currentPass, userpass.password)
+
+        if (checkPassword) {
+
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(newPass, salt)
+            const updatePass = await User.update({
+                password: hashedPassword
+            }, {
+                where: {
+                    id: user_id
+                }
+            })
+            return res.json({
+                'message': 'Password updated Successfully',
+            })
+        } else {
+            console.log("else");
+            return res.json({
+                'message': 'Incorrect password'
+            })
+        }
+
+
+    } else {
+        return res.json({
+            'message': 'Error while updating'
+        })
+    }
+
+
+}
+module.exports.updateEmail = async (req, res) => {
+
+    const {
+        user_id,
+        email
+    } = req.body;
+
+
+    const findUser = await User.findOne({
+        where: {
+            id: user_id
+        },
+        attributes: {
+            exclude: ['password', 'updatedAt', 'createdAt']
+        }
+    })
+
+    if (findUser) {
+        const updateEmail = await User.update({
+            email: email
+        }, {
+            where: {
+                id: user_id
+            }
+        })
+        return res.json({
+            'message': 'Email updated Successfully',
+            'email': email
+        })
+    } else {
+        return res.json({
+            'message': 'Error while updating'
+        })
+    }
+
+
+}
 
 module.exports.userLogin = async (req, res) => {
     try {
@@ -482,7 +617,7 @@ module.exports.userLogin = async (req, res) => {
         } = req.body;
 
 
-        //find admin by email
+        //find user by email
         const user = await User.findOne({
             where: {
                 email: email
