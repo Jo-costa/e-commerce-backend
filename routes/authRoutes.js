@@ -17,8 +17,11 @@ router.post('/userSignup', authController.userSignup)
 router.post('/update-name', authController.updateUserName)
 router.post('/update-email', authController.updateEmail)
 router.post('/update-pass', authController.updatePass)
+router.post('/create-checkout-session', authController.getCheckoutSession)
 
 
+router.get('/order-confirmed', authController.retrieveSession)
+router.get('/order-cancelled', authController.orderFailure)
 router.get('/adminlogout', authController.adminlogout)
 router.get('/products', authController.getProds)
 router.get('/userLogout', authController.userLogout)

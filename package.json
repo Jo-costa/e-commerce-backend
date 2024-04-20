@@ -22,7 +22,8 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "path": "^0.12.7",
     "sequelize": "^6.37.1",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "stripe": "^15.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

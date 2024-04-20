@@ -1,14 +1,19 @@
+const stripe = require('stripe')('sk_test_51P2zwpJZGiiutofUAJGDYD0BSVIyL22VNO2SLNB5E4vrZ5lx15IqRRk52JaJrtT73vDX0fawQpcivAZaygvaHxrz00gS4KlPgX')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer")
 const smtpTransport = require("nodemailer-smtp-transport")
 const dotenv = require('dotenv')
 dotenv.config();
+
 const {
     Admin,
     Products,
     Wishlist,
     User,
+    Orders,
+    OrderItems,
+    Payments,
     Session,
     Cart,
     Inventory,
@@ -167,7 +172,6 @@ module.exports.addToCart = async (req, res) => {
         })
 
         if (!productInCartTable) {
-            console.log('in');
             const addToCartTable = await Cart.create({
                 user_id: user_id,
                 product_id: lastAdded.product_id,
@@ -767,6 +771,167 @@ module.exports.userSignup = async (req, res) => {
             message: 'Internal server error'
         })
     }
+}
+
+module.exports.getCheckoutSession = async (req, res) => {
+
+    try {
+
+        const cartItems = req.body;
+        const user_id = req.body[0].user_id;
+
+        const order_id = Math.floor(Math.random() * 2147483648) || Math.floor(Math.random() * 2147483648)
+        const lineItems = []
+
+        const user = await User.findOne({
+            where: {
+                id: user_id
+            }
+        })
+
+        console.log("out");
+        if (user) {
+
+
+            console.log("asd");
+
+            for (let item of req.body) {
+
+
+                const findProduct = await Cart.findOne({
+                    where: {
+                        product_id: item.product_id
+                    }
+                })
+
+                if (!findProduct) {
+                    return res.json({
+                        'message': 'Product not found'
+                    })
+                }
+
+
+                lineItems.push({
+                    price_data: {
+                        currency: 'gbp',
+                        product_data: {
+                            name: findProduct.dataValues.name,
+                            images: [item.img_url]
+                        },
+                        unit_amount: findProduct.dataValues.price * 100 //convert to cents (essential)
+                    },
+                    quantity: findProduct.dataValues.quantity
+                })
+            }
+
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: lineItems,
+                mode: 'payment',
+                // success_url: `http://localhost:5173/order-confirmed`,
+                success_url: `http://localhost:5173/order-confirmed?session_id={CHECKOUT_SESSION_ID}&user_id=${user.id}&order_id=${order_id}`, //stripe replaces CHECKOUT_SESSION_ID with the actual id automatically once session has fineshed being created 
+                cancel_url: `http://localhost:5173/order-cancelled?user_id=${user.id}&order_id=${order_id}`
+            })
+
+            const orderItems = await OrderItems.bulkCreate(cartItems.map(item => ({
+                url_id: order_id,
+                product_id: item.product_id,
+                quantity: item.quantity
+            })))
+
+
+            console.log(session);
+
+            return res.json({
+                'checkout_session_id': session.id
+            })
+        }
+
+    } catch (error) {
+        res.status(500).json({
+            error: 'Failed to create checkout session'
+        });
+    }
+
+}
+
+module.exports.retrieveSession = async (req, res) => {
+    // const session = await stripe.checkout.sessions.retrieve(req.query.session)
+
+    try {
+        console.log(req.query);
+        const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+        const user_id = req.query.user_id;
+        const order_id = req.query.order_id;
+        //const checkPassword = await bcrypt.compare(currentPass, userpass.password)
+
+        console.log("session: ", session);
+
+        const addPayment = await Payments.create({
+            status: 'paid',
+            total_price: session.amount_total,
+            created_by: user_id,
+            updated_by: user_id
+        })
+
+
+        const findProductId = await OrderItems.findAll({
+            where: {
+                url_id: order_id
+            }
+        })
+
+        for (let item of findProductId) {
+            console.log("item: ", item.dataValues);
+            const order = await Orders.create({
+                user_id: user_id,
+                payment_id: addPayment.dataValues.id,
+                status: 'Paid',
+                total_price: session.amount_total,
+                created_by: user_id,
+                updated_by: user_id,
+                product_id: item.dataValues.product_id,
+                order_id: item.dataValues.id,
+            })
+        }
+
+        const emptyCart = await Cart.destroy({
+            where: {
+                user_id: user_id
+            }
+        })
+
+
+
+
+        return res.json({
+            'message': 'Order Placed successfully'
+        })
+    } catch (error) {
+        console.log("error: ", error);
+
+        return res.json({
+            'message': 'Invalid checkout session'
+        })
+    }
+
+
+
+}
+
+module.exports.orderFailure = async (req, res) => {
+    const url_id = req.query.order_id //url_id (database field) order_id(url query parameter set)
+
+    const removeOrder = await OrderItems.destroy({
+        where: {
+            url_id: url_id
+        }
+    })
+
+    return res.json({
+        'message': 'Order cancelled'
+    })
+
 }
 
 module.exports.verifyAccount = async (req, res) => {

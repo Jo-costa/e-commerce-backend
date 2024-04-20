@@ -41,6 +41,9 @@ const Wishlist = require('./Wishlist.js')(sequelize);
 const Session = require('./Session.js')(sequelize);
 const Cart = require('./Cart.js')(sequelize);
 const Products = require('./Products.js')(sequelize);
+const Orders = require('./Orders.js')(sequelize);
+const OrderItems = require('./OrderItems.js')(sequelize);
+const Payments = require('./Payments.js')(sequelize);
 const Inventory = require('./Inventory.js')(sequelize);
 const Images = require('./Images.js')(sequelize);
 
@@ -55,6 +58,35 @@ Products.hasMany(Wishlist, {
   foreignKey: 'product_id'
 })
 Wishlist.belongsTo(Products, {
+  foreignKey: 'product_id'
+})
+
+User.hasOne(Orders, {
+  foreignKey: 'user_id'
+})
+Orders.belongsTo(User, {
+  foreignKey: 'user_id'
+})
+
+Payments.hasOne(Orders, {
+  foreignKey: 'payment_id'
+})
+
+Orders.belongsTo(Payments, {
+  foreignKey: 'payment_id'
+})
+
+OrderItems.hasOne(Orders, {
+  foreignKey: 'order_id'
+})
+Orders.belongsTo(OrderItems, {
+  foreignKey: 'order_id'
+})
+
+Products.hasOne(Orders, {
+  foreignKey: 'product_id'
+})
+Orders.belongsTo(Products, {
   foreignKey: 'product_id'
 })
 
