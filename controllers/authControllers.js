@@ -934,6 +934,47 @@ module.exports.orderFailure = async (req, res) => {
 
 }
 
+module.exports.retrieveAllOrders = async (req, res) => {
+    const user_id = req.query.user_id;
+
+
+
+    try {
+
+
+        const user = await User.findOne({
+            where: {
+                id: user_id
+            }
+        })
+
+        console.log(user);
+
+        if (!user) {
+            console.log("user");
+            return res.json({
+                'message': 'Unauthorised Access'
+            })
+        }
+
+        const retrieveOrders = await Orders.findAll({
+            where: {
+                user_id: user_id
+            }
+        })
+
+
+
+        return res.json({
+            'orders': retrieveOrders
+        })
+
+    } catch (error) {
+
+    }
+}
+
+
 module.exports.verifyAccount = async (req, res) => {
 
     const token = req.params.id

@@ -1,6 +1,7 @@
 const {
     Router
 } = require("express")
+
 const router = Router();
 const authController = require("../controllers/authControllers")
 
@@ -20,6 +21,7 @@ router.post('/update-pass', authController.updatePass)
 router.post('/create-checkout-session', authController.getCheckoutSession)
 
 
+router.get('/vieworders', authController.retrieveAllOrders)
 router.get('/order-confirmed', authController.retrieveSession)
 router.get('/order-cancelled', authController.orderFailure)
 router.get('/adminlogout', authController.adminlogout)

@@ -17,26 +17,18 @@ module.exports = {
     const hashedPassword = await bcrypt.hash('test123', salt)
     const hashedPassword1 = await bcrypt.hash('test123', salt)
     await queryInterface.bulkInsert('users', [{
-        name: "user1",
+        username: "user1",
         email: "user1@user1.com",
         password: hashedPassword,
         isUser: true,
+        isVerified: true,
         createdAt: new Date(),
         updatedAt: new Date()
       },
 
     ])
 
-    await queryInterface.bulkInsert('users', [{
-        name: "user2",
-        email: "user2@user2.com",
-        password: hashedPassword1,
-        isUser: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
 
-    ])
   },
 
 
