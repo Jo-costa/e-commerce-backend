@@ -94,6 +94,7 @@ const verifyGenerateEmailVerificationToken = (token) => {
     }
 }
 
+
 module.exports.getProds = async (req, res) => {
 
     try {
@@ -1068,112 +1069,112 @@ module.exports.userLogout = async (req, res) => {
         'wishlist': []
     })
 }
-module.exports.adminlogin = async (req, res) => {
+// module.exports.adminlogin = async (req, res) => {
 
-    try {
-        const {
-            email,
-            password
-        } = req.body;
+//     try {
+//         const {
+//             email,
+//             password
+//         } = req.body;
 
 
-        //find admin by email
-        const admin = await Admin.findOne({
-            where: {
-                email
-            }
-            // email: email (also works)
-        });
+//         //find admin by email
+//         const admin = await Admin.findOne({
+//             where: {
+//                 email
+//             }
+//             // email: email (also works)
+//         });
 
-        //if admin not found
-        if (!admin) {
-            return res.status(422).json({
-                message: 'Invalid Email Address'
-            })
-        }
+//         //if admin not found
+//         if (!admin) {
+//             return res.status(422).json({
+//                 message: 'Invalid Email Address'
+//             })
+//         }
 
-        //verify password by comparing the password the user entered
-        //against the hashed password inserted in the database (Models > Admin.js)
-        const checkPassword = await bcrypt.compare(password, admin.password)
+//         //verify password by comparing the password the user entered
+//         //against the hashed password inserted in the database (Models > Admin.js)
+//         const checkPassword = await bcrypt.compare(password, admin.password)
 
-        //if password doesnt match send 403 status
-        if (!checkPassword) {
-            return res.status(422).json({
-                message: 'Incorrect Password'
-            })
-        }
+//         //if password doesnt match send 403 status
+//         if (!checkPassword) {
+//             return res.status(422).json({
+//                 message: 'Incorrect Password'
+//             })
+//         }
 
-        //check if user is admin
-        if (!admin.isAdmin) {
-            return res.status(403).json({
-                message: 'Unauthorised Access'
-            });
+//         //check if user is admin
+//         if (!admin.isAdmin) {
+//             return res.status(403).json({
+//                 message: 'Unauthorised Access'
+//             });
 
-        }
+//         }
 
-        const token = createToken(admin.email);
-        // res.cookie('jwt', token, {
-        //     httpOnly: true,
-        //     maxAge: 3600000
-        // })
-        // res.status(201).json({
-        //     admin: admin.email
-        // })
+//         const token = createToken(admin.email);
+//         // res.cookie('jwt', token, {
+//         //     httpOnly: true,
+//         //     maxAge: 3600000
+//         // })
+//         // res.status(201).json({
+//         //     admin: admin.email
+//         // })
 
-        return res.json({
-            'user': admin,
-            'token': token
-        })
+//         return res.json({
+//             'user': admin,
+//             'token': token
+//         })
 
-    } catch (error) {
-        console.error('Login error', error);
-        res.status(500).json({
-            message: 'Internal server error'
-        })
-    }
-}
+//     } catch (error) {
+//         console.error('Login error', error);
+//         res.status(500).json({
+//             message: 'Internal server error'
+//         })
+//     }
+// }
 
-module.exports.adminlogout = async (req, res) => {
+// module.exports.adminlogout = async (req, res) => {
 
-    // res.cookie('jwt', "", {
-    //     maxAge: 1
-    // });
-    // res.redirect("/login")
+//     // res.cookie('jwt', "", {
+//     //     maxAge: 1
+//     // });
+//     // res.redirect("/login")
 
-    res.status(200).json({
-        message: 'Logout successful'
-    })
-}
+//     res.status(200).json({
+//         message: 'Logout successful'
+//     })
+// }
 
-module.exports.getAdmin = async (req, res) => {
-    try {
+// module.exports.getAdmin = async (req, res) => {
+//     try {
 
-        const {
-            email
-        } = req.body
+//         const {
+//             email
+//         } = req.body
 
-        const admin = await Admin.findOne({
-            where: {
-                email
-            }
-        })
+//         const admin = await Admin.findOne({
+//             where: {
+//                 email
+//             }
+//         })
 
-        if (!admin) {
-            return res.status(422).json({
-                message: 'Invalid user'
-            })
+//         if (!admin) {
+//             return res.status(422).json({
+//                 message: 'Invalid user'
+//             })
 
-            //attach admin object to req object for upcoming routres handlers
+//             //attach admin object to req object for upcoming routres handlers
 
-        }
-        return res.json({
-            'admin': admin
-        })
+//         }
+//         return res.json({
+//             'admin': admin
+//         })
 
-    } catch (error) {
-        console.error('Error fetching user', error);
-        res.status(500).json({
-            message: 'Server error'
-        })
-    }
-}
+//     } catch (error) {
+//         console.error('Error fetching user', error);
+//         res.status(500).json({
+//             message: 'Server error'
+//         })
+//     }
+// }
