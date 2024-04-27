@@ -143,7 +143,6 @@ module.exports.adminlogout = async (req, res) => {
 module.exports.removeProduct = async (req, res) => {
     const product_id = req.body.product_id
 
-    // console.log(req.body);
     const remove = await Products.destroy({
         where: {
             id: product_id
@@ -156,6 +155,20 @@ module.exports.removeProduct = async (req, res) => {
     })
     return res.json({
         'products': retrieveProducts
+    })
+}
+module.exports.removeUser = async (req, res) => {
+    const user_id = req.body.user_id
+
+    const users = await User.destroy({
+        where: {
+            id: user_id
+        }
+    })
+
+
+    return res.json({
+        'users': users
     })
 }
 
@@ -193,7 +206,6 @@ module.exports.addProduct = async (req, res) => {
             })
 
 
-            console.log("images", Images);
             const addProdImages = await Images.bulkCreate([{
                     img_url: img_url1,
                     product_id: addProd.id
@@ -240,7 +252,11 @@ module.exports.addProduct = async (req, res) => {
 
     } catch (error) {
 
+
         console.log(error);
+        return res.json({
+            'message': error
+        })
     }
 
 
@@ -263,29 +279,6 @@ module.exports.editProduct = async (req, res) => {
             img_url4
         } = req.body
 
-
-        console.log(img_url1);
-        // const findProduct = await Products.findOne({
-        //     where: {
-        //         id: id
-        //     }
-        // })
-
-        // if (findProduct) {
-
-        //     const updateProd = await Products.update({
-        //         where:{id:id},
-        //         name
-        //     })
-
-        //     findProduct.dataValues.name = name;
-        //     findProduct.dataValues.brand = brand;
-        //     findProduct.dataValues.price = price;
-        //     findProduct.dataValues.description = price;
-
-        //     await findProduct.dataValues.save()
-        //     console.log(findProduct);
-        // }
 
         const updateProduct = await Products.findByPk(id)
             .then(product => {
@@ -322,17 +315,6 @@ module.exports.editProduct = async (req, res) => {
         })
         const imagesToSave = [img_url1, img_url2, img_url3, img_url4]
 
-        console.log(img_url1, "adasdasd");
-        console.log(imagesToSave[0], "asdasdasd");
-        console.log(imagesToSave[1]);
-        console.log(imagesToSave[2]);
-        console.log(imagesToSave[3]);
-        console.log("Before update images");
-
-
-
-
-
         try {
 
 
@@ -356,23 +338,37 @@ module.exports.editProduct = async (req, res) => {
 
         } catch (error) {
             console.log(error);
+            return res.json({
+                'messsage': error
+            })
         }
 
     } catch (error) {
-
+        return res.json({
+            'messsage': error
+        })
     }
 }
 
+module.exports.getUsers = async (req, res) => {
+
+    const users = await Users.findAll({
+        //joining tables
+
+    })
+
+    return res.json({
+        'users': users
+    })
+}
 module.exports.getOrders = async (req, res) => {
 
-    console.log(sequelize.models);
     const orders = await sequelize.models.Orders.findAll({
         //joining tables
         include: [sequelize.models.OrderItems],
 
     })
 
-    console.log(orders);
     return res.json({
         'orders': orders
     })

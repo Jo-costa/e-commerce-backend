@@ -1,4 +1,4 @@
-const stripe = require('stripe')('sk_test_51P2zwpJZGiiutofUAJGDYD0BSVIyL22VNO2SLNB5E4vrZ5lx15IqRRk52JaJrtT73vDX0fawQpcivAZaygvaHxrz00gS4KlPgX')
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer")
@@ -22,11 +22,7 @@ const {
 const {
     join
 } = require("path");
-// const ProductsModel = require('../models/Products')
 
-// const {
-//     Admin
-// } = require('../models/Products')
 function sendSignupConfirmation(newUserMail, name, id) {
     const token = generateEmailVerificationToken(id)
 
@@ -52,7 +48,7 @@ function sendSignupConfirmation(newUserMail, name, id) {
         <p>By signing up, you've unlocked access to exclusive deals, personalized recommendations, and speedy checkout options.
         Before you can start using our platform, please confirm your account by clicking the link below:</p>
         
-        <p><a href="http://localhost:3000/signup/accountverified/${token}">Verify Account</a></p>
+        <p><a href="http://3.225.74.199:3000/signup/accountverified/${token}">Verify Account</a></p>
         
         <p>Happy shopping!</p>
         
@@ -96,16 +92,11 @@ module.exports.getProds = async (req, res) => {
 
     try {
 
-        // const prods = await sequelize.models.Products.findAll({
-        //     //joining tables
-        //     include: [sequelize.models.Inventory, sequelize.models.Images]
-
-        // })
-
         const prods = await sequelize.models.Products.findAll({
             //joining tables
             include: [sequelize.models.Inventory, sequelize.models.Images]
         })
+
 
         if (req.headers.authorization) {
 
@@ -131,7 +122,6 @@ module.exports.getProds = async (req, res) => {
                     }
                 })
 
-                console.log("cart", cart);
                 return res.json({
                     'prods': prods,
                     'cart': cart
@@ -204,7 +194,6 @@ module.exports.removeFromCart = async (req, res) => {
     const quantity = req.body.quantity
     const stock = req.body.stock
 
-    console.log(quantity);
 
     //find cart in db
     const dbCart = await Cart.findOne({
@@ -259,14 +248,12 @@ module.exports.removeFromCart = async (req, res) => {
             const getCart = await Cart.findAll()
 
             updateCart = getCart
-            console.log(updateCart);
             return res.json({
                 'cart': updateCart
             })
 
         }
 
-        console.log(updateCart);
         return res.json({
             'cart': updateCart
         })
@@ -277,7 +264,6 @@ module.exports.increaseQty = async (req, res) => {
     const {
         user_id,
         product_id,
-        quantity,
         stock
     } = req.body
 
@@ -318,12 +304,9 @@ module.exports.decreaseQty = async (req, res) => {
     const {
         user_id,
         product_id,
-        quantity,
         stock
     } = req.body
 
-    console.log("prod:", product_id);
-    console.log("qty:", quantity);
 
     const findUser = await Session.findOne({
         where: {
@@ -340,13 +323,11 @@ module.exports.decreaseQty = async (req, res) => {
                 where: {
                     user_id: user_id,
                     product_id: product_id
-
                 },
                 returning: true
             } //returning: true to get the updated records
 
         )
-
 
         const updateStock = await Inventory.update({
             stock: stock
@@ -355,7 +336,6 @@ module.exports.decreaseQty = async (req, res) => {
                 product_id: product_id
             }
         })
-
 
         //look for the updated record
         const checkQty = await Cart.findOne({
@@ -402,8 +382,6 @@ module.exports.addToWishlist = async (req, res) => {
         }
     })
 
-
-
     if (user) {
 
         const findProduct = await Wishlist.findOne({
@@ -420,14 +398,12 @@ module.exports.addToWishlist = async (req, res) => {
 
             const retrieveWishlist = await Wishlist.findAll()
 
-            console.log(retrieveWishlist);
             return res.json(retrieveWishlist)
         }
 
         const retrieveWishlist = await Wishlist.findAll()
 
         return res.json(retrieveWishlist)
-
 
     }
 
@@ -460,7 +436,6 @@ module.exports.removeFromWishlist = async (req, res) => {
 
             const retrieveWishlist = await Wishlist.findAll()
 
-            console.log(retrieveWishlist);
             return res.json(retrieveWishlist)
         }
 
@@ -468,10 +443,7 @@ module.exports.removeFromWishlist = async (req, res) => {
 
         return res.json(retrieveWishlist)
 
-
     }
-
-
 
 }
 
@@ -481,8 +453,6 @@ module.exports.updateUserName = async (req, res) => {
         user_id,
         newUsername
     } = req.body;
-
-    console.log(user_id, newUsername);
 
     const findUser = await User.findOne({
         where: {
@@ -511,7 +481,6 @@ module.exports.updateUserName = async (req, res) => {
         })
     }
 
-
 }
 module.exports.updatePass = async (req, res) => {
 
@@ -520,9 +489,6 @@ module.exports.updatePass = async (req, res) => {
         currentPass,
         newPass
     } = req.body;
-
-    console.log(user_id, currentPass, newPass);
-
 
     const findUser = await User.findOne({
         where: {
@@ -559,19 +525,16 @@ module.exports.updatePass = async (req, res) => {
                 'message': 'Password updated Successfully',
             })
         } else {
-            console.log("else");
             return res.json({
                 'message': 'Incorrect password'
             })
         }
-
 
     } else {
         return res.json({
             'message': 'Error while updating'
         })
     }
-
 
 }
 module.exports.updateEmail = async (req, res) => {
@@ -580,7 +543,6 @@ module.exports.updateEmail = async (req, res) => {
         user_id,
         email
     } = req.body;
-
 
     const findUser = await User.findOne({
         where: {
@@ -609,7 +571,6 @@ module.exports.updateEmail = async (req, res) => {
         })
     }
 
-
 }
 
 module.exports.userLogin = async (req, res) => {
@@ -618,7 +579,6 @@ module.exports.userLogin = async (req, res) => {
             email,
             password
         } = req.body;
-
 
         //find user by email
         const user = await User.findOne({
@@ -661,7 +621,6 @@ module.exports.userLogin = async (req, res) => {
             return res.status(403).json({
                 message: 'Unauthorised Access'
             });
-
         }
 
         if (!user.isVerified) {
@@ -672,7 +631,6 @@ module.exports.userLogin = async (req, res) => {
 
         const token = createToken(user.email);
 
-
         const cart = await Cart.findAll({
             where: {
                 user_id: user.id
@@ -681,7 +639,6 @@ module.exports.userLogin = async (req, res) => {
                 exclude: ['createdAt', 'updatedAt']
             }
         })
-
         const wishlist = await Wishlist.findAll({
             where: {
                 user_id: user.id
@@ -691,9 +648,6 @@ module.exports.userLogin = async (req, res) => {
             }
         })
 
-        // res.status(201).json({
-        //     admin: admin.email
-        // })
 
         //store session in the database
         const session = await Session.create({
@@ -771,7 +725,6 @@ module.exports.userSignup = async (req, res) => {
         })
     }
 }
-
 module.exports.getCheckoutSession = async (req, res) => {
 
     try {
@@ -788,15 +741,10 @@ module.exports.getCheckoutSession = async (req, res) => {
             }
         })
 
-        console.log("out");
         if (user) {
-
-
-            console.log("asd");
 
             for (let item of req.body) {
 
-                console.log("In");
 
                 const findProduct = await Cart.findOne({
                     where: {
@@ -810,7 +758,6 @@ module.exports.getCheckoutSession = async (req, res) => {
                     })
                 }
 
-
                 lineItems.push({
                     price_data: {
                         currency: 'gbp',
@@ -823,17 +770,14 @@ module.exports.getCheckoutSession = async (req, res) => {
                     quantity: findProduct.dataValues.quantity
                 })
 
-                console.log(lineItems);
             }
 
-            console.log("before session");
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: lineItems,
                 mode: 'payment',
-                // success_url: `http://localhost:5173/order-confirmed`,
-                success_url: `http://digital-dynasty.s3-website-us-east-1.amazonaws.com/order-confirmed?session_id={CHECKOUT_SESSION_ID}&user_id=${user.id}&order_id=${order_id}`, //stripe replaces CHECKOUT_SESSION_ID with the actual id automatically once session has fineshed being created 
-                cancel_url: `http://digital-dynasty.s3-website-us-east-1.amazonaws.com/order-cancelled?user_id=${user.id}&order_id=${order_id}`
+                success_url: `http://www.digital-dynasty.co.uk.s3-website-us-east-1.amazonaws.com/order-confirmed?session_id={CHECKOUT_SESSION_ID}&user_id=${user.id}&order_id=${order_id}`, //stripe replaces CHECKOUT_SESSION_ID with the actual id automatically once session has fineshed being created 
+                cancel_url: `http://www.digital-dynasty.co.uk.s3-website-us-east-1.amazonaws.com/order-cancelled?user_id=${user.id}&order_id=${order_id}`
             })
 
             const orderItems = await OrderItems.bulkCreate(cartItems.map(item => ({
@@ -843,7 +787,6 @@ module.exports.getCheckoutSession = async (req, res) => {
             })))
 
 
-            console.log(session);
 
             return res.json({
                 'checkout_session_id': session.id
@@ -851,7 +794,6 @@ module.exports.getCheckoutSession = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({
             error: 'Failed to create checkout session'
         });
@@ -860,16 +802,11 @@ module.exports.getCheckoutSession = async (req, res) => {
 }
 
 module.exports.retrieveSession = async (req, res) => {
-    // const session = await stripe.checkout.sessions.retrieve(req.query.session)
 
     try {
-        console.log(req.query);
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
         const user_id = req.query.user_id;
         const order_id = req.query.order_id;
-        //const checkPassword = await bcrypt.compare(currentPass, userpass.password)
-
-        console.log("session: ", session);
 
         const addPayment = await Payments.create({
             status: 'paid',
@@ -886,7 +823,6 @@ module.exports.retrieveSession = async (req, res) => {
         })
 
         for (let item of findProductId) {
-            console.log("item: ", item.dataValues);
             const order = await Orders.create({
                 user_id: user_id,
                 payment_id: addPayment.dataValues.id,
@@ -912,7 +848,6 @@ module.exports.retrieveSession = async (req, res) => {
             'message': 'Order Placed successfully'
         })
     } catch (error) {
-        console.log("error: ", error);
 
         return res.json({
             'message': 'Invalid checkout session'
@@ -941,10 +876,7 @@ module.exports.orderFailure = async (req, res) => {
 module.exports.retrieveAllOrders = async (req, res) => {
     const user_id = req.query.user_id;
 
-
-
     try {
-
 
         const user = await User.findOne({
             where: {
@@ -952,10 +884,7 @@ module.exports.retrieveAllOrders = async (req, res) => {
             }
         })
 
-        console.log(user);
-
         if (!user) {
-            console.log("user");
             return res.json({
                 'message': 'Unauthorised Access'
             })
@@ -967,6 +896,11 @@ module.exports.retrieveAllOrders = async (req, res) => {
             }
         })
 
+        if (retrieveOrders.length === 0) {
+            return res.json({
+                'message': 'No orders!'
+            })
+        }
 
 
         return res.json({
@@ -975,9 +909,12 @@ module.exports.retrieveAllOrders = async (req, res) => {
 
     } catch (error) {
 
+        return res.json({
+            'message': error
+        })
+
     }
 }
-
 
 module.exports.verifyAccount = async (req, res) => {
 
@@ -1056,7 +993,7 @@ module.exports.verifyAccount = async (req, res) => {
             <div class="container">
                 <h2>Sign Up Successful!</h2>
                 <p>Thank you for signing up.</p>
-                <p>You can now <a href="http://localhost:5173/login">log in</a> to your account.</p>
+                <p>You can now <a href="http://www.digital-dynasty.co.uk.s3-website-us-east-1.amazonaws.com/login">log in</a> to your account.</p>
             </div>
         </body>
         </html>`
@@ -1079,7 +1016,6 @@ module.exports.userLogout = async (req, res) => {
     } = req.query
 
 
-    console.log("userid: ", user_id);
     await Session.destroy({
         where: {
             user_id: user_id
@@ -1093,112 +1029,3 @@ module.exports.userLogout = async (req, res) => {
         'wishlist': []
     })
 }
-// module.exports.adminlogin = async (req, res) => {
-
-//     try {
-//         const {
-//             email,
-//             password
-//         } = req.body;
-
-
-//         //find admin by email
-//         const admin = await Admin.findOne({
-//             where: {
-//                 email
-//             }
-//             // email: email (also works)
-//         });
-
-//         //if admin not found
-//         if (!admin) {
-//             return res.status(422).json({
-//                 message: 'Invalid Email Address'
-//             })
-//         }
-
-//         //verify password by comparing the password the user entered
-//         //against the hashed password inserted in the database (Models > Admin.js)
-//         const checkPassword = await bcrypt.compare(password, admin.password)
-
-//         //if password doesnt match send 403 status
-//         if (!checkPassword) {
-//             return res.status(422).json({
-//                 message: 'Incorrect Password'
-//             })
-//         }
-
-//         //check if user is admin
-//         if (!admin.isAdmin) {
-//             return res.status(403).json({
-//                 message: 'Unauthorised Access'
-//             });
-
-//         }
-
-//         const token = createToken(admin.email);
-//         // res.cookie('jwt', token, {
-//         //     httpOnly: true,
-//         //     maxAge: 3600000
-//         // })
-//         // res.status(201).json({
-//         //     admin: admin.email
-//         // })
-
-//         return res.json({
-//             'user': admin,
-//             'token': token
-//         })
-
-//     } catch (error) {
-//         console.error('Login error', error);
-//         res.status(500).json({
-//             message: 'Internal server error'
-//         })
-//     }
-// }
-
-// module.exports.adminlogout = async (req, res) => {
-
-//     // res.cookie('jwt', "", {
-//     //     maxAge: 1
-//     // });
-//     // res.redirect("/login")
-
-//     res.status(200).json({
-//         message: 'Logout successful'
-//     })
-// }
-
-// module.exports.getAdmin = async (req, res) => {
-//     try {
-
-//         const {
-//             email
-//         } = req.body
-
-//         const admin = await Admin.findOne({
-//             where: {
-//                 email
-//             }
-//         })
-
-//         if (!admin) {
-//             return res.status(422).json({
-//                 message: 'Invalid user'
-//             })
-
-//             //attach admin object to req object for upcoming routres handlers
-
-//         }
-//         return res.json({
-//             'admin': admin
-//         })
-
-//     } catch (error) {
-//         console.error('Error fetching user', error);
-//         res.status(500).json({
-//             message: 'Server error'
-//         })
-//     }
-// }

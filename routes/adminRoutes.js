@@ -11,9 +11,8 @@ router.post('/remove-product', adminController.removeProduct)
 router.post('/add-product', adminController.addProduct)
 router.post('/edit-product', adminController.editProduct)
 
-
-
 router.get('/adminlogout', adminController.adminlogout)
 router.get('/orders', adminController.getOrders)
+router.get('/users', adminController.getUsers)
 
 module.exports = router;
