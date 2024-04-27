@@ -52,7 +52,7 @@ function sendSignupConfirmation(newUserMail, name, id) {
         <p>By signing up, you've unlocked access to exclusive deals, personalized recommendations, and speedy checkout options.
         Before you can start using our platform, please confirm your account by clicking the link below:</p>
         
-        <p><a href="http://localhost:3000/signup/accountverified/${token}">Verify Account (expires in 10 mins)</a></p>
+        <p><a href="http://localhost:3000/signup/accountverified/${token}">Verify Account</a></p>
         
         <p>Happy shopping!</p>
         
@@ -65,9 +65,6 @@ function sendSignupConfirmation(newUserMail, name, id) {
             console.log("Error sending email", error);
 
         }
-
-        console.log("Email sent");
-
     })
 }
 
@@ -134,6 +131,7 @@ module.exports.getProds = async (req, res) => {
                     }
                 })
 
+                console.log("cart", cart);
                 return res.json({
                     'prods': prods,
                     'cart': cart
@@ -798,6 +796,7 @@ module.exports.getCheckoutSession = async (req, res) => {
 
             for (let item of req.body) {
 
+                console.log("In");
 
                 const findProduct = await Cart.findOne({
                     where: {
@@ -823,15 +822,18 @@ module.exports.getCheckoutSession = async (req, res) => {
                     },
                     quantity: findProduct.dataValues.quantity
                 })
+
+                console.log(lineItems);
             }
 
+            console.log("before session");
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: lineItems,
                 mode: 'payment',
                 // success_url: `http://localhost:5173/order-confirmed`,
-                success_url: `http://localhost:5173/order-confirmed?session_id={CHECKOUT_SESSION_ID}&user_id=${user.id}&order_id=${order_id}`, //stripe replaces CHECKOUT_SESSION_ID with the actual id automatically once session has fineshed being created 
-                cancel_url: `http://localhost:5173/order-cancelled?user_id=${user.id}&order_id=${order_id}`
+                success_url: `http://digital-dynasty.s3-website-us-east-1.amazonaws.com/order-confirmed?session_id={CHECKOUT_SESSION_ID}&user_id=${user.id}&order_id=${order_id}`, //stripe replaces CHECKOUT_SESSION_ID with the actual id automatically once session has fineshed being created 
+                cancel_url: `http://digital-dynasty.s3-website-us-east-1.amazonaws.com/order-cancelled?user_id=${user.id}&order_id=${order_id}`
             })
 
             const orderItems = await OrderItems.bulkCreate(cartItems.map(item => ({
@@ -849,6 +851,7 @@ module.exports.getCheckoutSession = async (req, res) => {
         }
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             error: 'Failed to create checkout session'
         });
@@ -980,30 +983,6 @@ module.exports.verifyAccount = async (req, res) => {
 
     const token = req.params.id
 
-
-    // try {
-
-    //     const findUser = await User.findByPk(userID)
-    //     if (!findUser) {
-    //         return res.status(404).json({
-    //             message: 'User not found'
-    //         })
-    //     }
-
-    //     findUser.isVerified = true;
-
-    //     await findUser.save();
-    //     res.status(200).json({
-    //         message: 'Account verified successfully.'
-    //     })
-
-    // } catch (error) {
-    //     console.log("Verification error: ", error);
-    //     return res.status(500).json({
-    //         message: 'Internal server error'
-    //     })
-    // }
-
     try {
 
         const decodeToken = verifyGenerateEmailVerificationToken(token)
@@ -1034,9 +1013,54 @@ module.exports.verifyAccount = async (req, res) => {
         user.isVerified = true;
 
         await user.save();
-        res.status(200).json({
-            message: 'Account verified successfully.'
-        })
+
+
+        const page = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Sign Up Success</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #ffffff; /* White background */
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                }
+                
+                .container {
+                    width: 400px;
+                    padding: 40px;
+                    background-color: #008080; /* Teal background */
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    color: #ffffff; /* White text color */
+                    text-align: center;
+                }
+                
+                h2 {
+                    margin-bottom: 20px;
+                }
+                
+                p {
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Sign Up Successful!</h2>
+                <p>Thank you for signing up.</p>
+                <p>You can now <a href="http://localhost:5173/login">log in</a> to your account.</p>
+            </div>
+        </body>
+        </html>`
+        res.send(page)
 
 
     } catch (error) {

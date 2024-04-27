@@ -14,5 +14,6 @@ router.post('/edit-product', adminController.editProduct)
 
 
 router.get('/adminlogout', adminController.adminlogout)
+router.get('/orders', adminController.getOrders)
 
 module.exports = router;

@@ -362,3 +362,18 @@ module.exports.editProduct = async (req, res) => {
 
     }
 }
+
+module.exports.getOrders = async (req, res) => {
+
+    console.log(sequelize.models);
+    const orders = await sequelize.models.Orders.findAll({
+        //joining tables
+        include: [sequelize.models.OrderItems],
+
+    })
+
+    console.log(orders);
+    return res.json({
+        'orders': orders
+    })
+}
