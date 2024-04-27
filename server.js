@@ -21,6 +21,11 @@ app.use(express.json())
 
 app.use(authRoutes);
 app.use(adminRoutes);
+app.get('test', (req, res) => {
+    res.json({
+        'msg': 'HI'
+    })
+})
 
 
 db.sequelize.sync().then((req) => {
