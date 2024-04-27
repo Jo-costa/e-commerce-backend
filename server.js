@@ -21,7 +21,7 @@ app.use(express.json())
 
 app.use(authRoutes);
 app.use(adminRoutes);
-app.get('test', (req, res) => {
+app.get('/test', (req, res) => {
     res.json({
         'msg': 'HI'
     })
